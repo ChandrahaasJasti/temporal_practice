@@ -1,7 +1,7 @@
 from temporalio import activity
 import asyncio
 from dataclasses import dataclass
-import datetime
+from datetime import datetime
 
 @dataclass
 class DocumentCollection:
@@ -10,25 +10,28 @@ class DocumentCollection:
     collected_at: str
     status: str
 
-# @dataclass
-# class CreditCheck:
-#     applicant_name: str
-#     credit_score: int
-#     credit_history: str
-#     checked_at: str
-#     status: str
+@dataclass
+class CreditCheck:
+    applicant_name: str
+    credit_score: int
+    credit_history: str
+    checked_at: str
+    status: str
 
-#@activity.defn(name="collect_docs")
+@activity.defn(name="collect_docs")
 async def collect_docs(applicant_name: str) -> DocumentCollection:
-    print("Starting document collection activity")
-    aadhar=fetch(applicant_name,type="aadhar" )
-    pan=fetch(applicant_name,type="pan")
-    bank_statement=fetch(applicant_name,type="bank_statement")
-    income_statement=fetch(applicant_name,type="income_statement")
-    tax_return=fetch(applicant_name,type="tax_return")
+    aadhar_task=asyncio.create_task(fetch(applicant_name,type="aadhar" ))
+    pan_task=asyncio.create_task(fetch(applicant_name,type="pan"))
+    bank_statement_task=asyncio.create_task(fetch(applicant_name,type="bank_statement"))
+    income_statement_task=asyncio.create_task(fetch(applicant_name,type="income_statement"))
+    tax_return_task=asyncio.create_task(fetch(applicant_name,type="tax_return"))
+    aadhar=await aadhar_task
+    pan=await pan_task
+    bank_statement=await bank_statement_task
+    income_statement=await income_statement_task
+    tax_return=await tax_return_task
     documents=[aadhar, pan, bank_statement, income_statement, tax_return]
-    for i in documents:
-        print(i)
+    print(documents)
     result = DocumentCollection(
         applicant_name=applicant_name,
         documents=documents,
@@ -69,4 +72,4 @@ async def fetch(applicant_name: str, type: str):
     elif type == "tax_return":
         return "1000000"
 
-collect_docs("John Doe")
+asyncio.run(collect_docs("John Doe"))
