@@ -78,8 +78,8 @@ async def finalizer(customer_id: str) -> str:
         print("returning customer id")
         return "SFC012"
     else:
-        print("Customer is existing, returning existing customer id")
-        return "SFC012"
+        print("failed to convert lead into a customer")
+        return ""
 
 """
 -----------------------------------------------------------------------------------------------------------------
