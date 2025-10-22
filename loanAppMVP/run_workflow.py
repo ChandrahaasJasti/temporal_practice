@@ -43,13 +43,17 @@ async def main():
     print("📊 WORKFLOW RESULTS")
     print("=" * 70)
     
-    print("=" * 70)
-    print("applicant_name: ", result["applicant_name"])
-    print("customer_id: ", result["customer_id"])
-    print("docs: ", result["docs"])
-    print("credit_score: ", result["credit_score"])
-    print("login_fee_status: ", result["login_fee_status"])
-    print("finalizer_status: ", result["finalizer_status"])
+    print(f"Status: {result['status']}")
+    print(f"Applicant Name: {result['applicant_name']}")
+    print(f"Customer ID: {result['customer_id']}")
+    print(f"Payment Status: {result['payment_status']}")
+    print(f"Credit Score: {result['credit_score']}")
+    print(f"Documents Collected: {result['docs']}")
+    print(f"Message: {result['message']}")
+    
+    # Show error if present
+    if result['status'] == 'FAILED' and 'error' in result:
+        print(f"⚠️  Error: {result['error']}")
     
     print("=" * 70)
 

@@ -4,6 +4,12 @@ from dataclasses import dataclass
 from datetime import datetime
 import random
 
+
+# Custom exception for payment failures
+class PaymentFailedException(Exception):
+    """Raised when payment processing fails"""
+    pass
+
 @dataclass
 class DocumentCollection:
     applicant_name: str
@@ -60,15 +66,25 @@ async def credit_check(applicant_name: str) -> CreditCheck:
 
 @activity.defn(name="login_fee")
 async def login_fee(applicant_name: str) -> str:
+    """
+    Activity to process login fee payment
+    Raises PaymentFailedException if payment fails (will trigger retry)
+    """
+    activity.logger.info(f"Processing login fee payment for {applicant_name}")
+    
     task = asyncio.create_task(generate_payment_link(applicant_name))
-    payment_completion=await task
+    payment_completion = await task
+    
     if payment_completion:
-        print("Payment completed successfully, converting lead into a customer")
-        print("returning cusomer id")
-        return "SFC012"
+        activity.logger.info("Payment completed successfully, converting lead into a customer")
+        customer_id = "SFC012"
+        activity.logger.info(f"Customer ID generated: {customer_id}")
+        return customer_id
     else:
-        print("payment failed, returning error code")
-        return ""
+        # Raise exception instead of returning empty string
+        # This will trigger Temporal's retry mechanism
+        activity.logger.warning(f"Payment failed for {applicant_name}")
+        raise PaymentFailedException(f"Payment processing failed for applicant: {applicant_name}")
 
 
 @activity.defn(name="finalizer")
@@ -109,7 +125,7 @@ async def fetch(applicant_name: str, type: str):
 
 async def generate_payment_link(applicant_name: str) -> str:
     await asyncio.sleep(1)
-    if random.randint(0, 100) < 50:
+    if random.randint(0, 100) < 30:
         return True
     else:
         return False
